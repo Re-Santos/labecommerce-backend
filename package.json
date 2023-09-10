@@ -1,0 +1,14 @@
+{
+  "name": "labecommerce-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type":"module",
+  "scripts": {
+    "index":"node index.js",
+    "process-argv":"clear && node exercicios/process-argv.js 1 2",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "renata",
+  "license": "ISC"
+}
