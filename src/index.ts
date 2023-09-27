@@ -68,12 +68,27 @@ app.get('/users', (req: Request, res: Response) => {
     res.status(200).send(users);
 });
 
+app.post('/users', (req:Request, res:Response)=>{
+    const {id, name, email, password}: TUser= req.body;
+
+    const newUser: TUser ={
+        id,
+        name,
+        email,
+        password, 
+    }
+
+    users.push(newUser)
+    res.status(201).send ('Novo usuário cadastrado com sucesso')
+
+})
+
 app.get('/products', (req:Request, res:Response)=>{
     const resultProducts: TProduct[] = products;
     res.status(200).send(resultProducts);
 });
 
-(app.get('/products/search', (req:Request, res:Response)=>{
+app.get('/products/search', (req:Request, res:Response)=>{
     const query: string = req.query.q as string;
     if (query) {
         const productsByName: TProduct[] = products.filter(product => product.name.toLowerCase()===query.toLowerCase());
@@ -88,5 +103,21 @@ app.get('/products', (req:Request, res:Response)=>{
         res.status(200).send(products)
     }
     
-} ));
+} );
+
+app.post('/products', (req:Request, res:Response)=>{
+    const {id, name, price, description, imageUrl}: TProduct= req.body;
+
+    const newProduct: TProduct ={
+        id,
+        name,
+        price,
+        description, 
+        imageUrl
+    }
+
+    products.push(newProduct)
+    res.status(201).send ('Novo produto cadastrado com sucesso')
+
+})
 
