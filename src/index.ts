@@ -146,3 +146,24 @@ app.delete('/products/:id',(req:Request, res:Response)=>{
 
     res.status(200).send({message:"Produto apagado com sucesso"})
 })
+
+app.put ('/products/:id',(req:Request, res:Response)=>{
+    const id = req.params.id
+    const newName = req.body.name as string|undefined
+    const newPrice = req.body.price as number|undefined
+    const newDescription = req.body.description as string|undefined
+    const newImageUrl = req.body.imageUrl as string|undefined
+
+    const product = products.find((product)=>product.id === id)
+      
+    if (product) {
+        product.name = newName || product.name;
+        product.price = newPrice || product.price;
+        product.description = newDescription || product.description;
+        product.imageUrl = newImageUrl || product.imageUrl;
+
+        res.status(200).send({ message: "Produto atualizado com sucesso" });
+    } else {
+        res.status(404).send({ message: "Produto não encontrado" });
+    }
+});
