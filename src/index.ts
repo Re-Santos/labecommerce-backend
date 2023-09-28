@@ -134,3 +134,15 @@ app.post('/products', (req:Request, res:Response)=>{
 
 })
 
+app.delete('/products/:id',(req:Request, res:Response)=>{
+    const id = req.params.id
+    const indexToDelete = products.findIndex((product)=>product.id === id)
+
+    if(indexToDelete >=0){
+        products.splice(indexToDelete,1)
+    }else{
+        console.log("Não há itens para deletar")
+    }
+
+    res.status(200).send({message:"Produto apagado com sucesso"})
+})
