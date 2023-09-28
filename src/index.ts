@@ -83,6 +83,19 @@ app.post('/users', (req:Request, res:Response)=>{
 
 })
 
+app.delete('/users/:id',(req:Request, res:Response)=>{
+    const id = req.params.id
+    const indexToDelete = users.findIndex((user)=>user.id === id)
+
+    if(indexToDelete >=0){
+        users.splice(indexToDelete,1)
+    }else{
+        console.log("Não há itens para deletar")
+    }
+
+    res.status(200).send({message:"User apagado com sucesso"})
+})
+
 app.get('/products', (req:Request, res:Response)=>{
     const resultProducts: TProduct[] = products;
     res.status(200).send(resultProducts);
