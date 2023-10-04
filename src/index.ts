@@ -64,74 +64,156 @@ app.get('/ping', (req: Request, res: Response) => {
 })
 
 app.get('/users', (req: Request, res: Response) => {
-    const users: TUser[] = getAllUsers();
-    res.status(200).send(users);
+    try {
+        const users: TUser[] = getAllUsers();
+        res.status(200).send(users);
+    } catch (error) {
+        res.status(500).send({message:'Ocorreu um erro ao buscar os usuários'})
+    }
+    
 });
 
 app.post('/users', (req:Request, res:Response)=>{
-    const {id, name, email, password}: TUser= req.body;
+    try {
+        const {id, name, email, password}: TUser= req.body;
 
-    const newUser: TUser ={
-        id,
-        name,
-        email,
-        password, 
+        if (typeof id !== 'string' || typeof email !== 'string' || typeof password !== 'string'){
+            res.statusCode = 400;
+            throw new Error ('O valor digitado precisa ser uma string.')
+        }
+        if (!id.trim() || !email.trim() || !password.trim()) {
+            res.statusCode = 400;
+            throw new Error ('retire os espaços vazios do valor digitado.')
+        }
+        if (typeof name !== 'string' || name.trim().length < 2) {
+            throw new Error("O valor digitado em 'name' deve ser uma string com pelo menos dois caracteres.");
+          }
+        if(users.some(user=>user.id===id)){
+            res.statusCode = 400;
+            throw new Error ("Esse 'id' já está sendo utilizado.")
+        }
+        if (users.some(user=>user.email === email)){
+            res.statusCode = 400;
+            throw new Error ("Esse 'email' já está sendo utilizado.")
+        }
+        if (!email.includes('@')){
+            res.statusCode = 400;
+            throw new Error ("Este email é inválido.")
+        }
+    
+        const newUser: TUser ={
+            id, 
+            name, 
+            email, 
+            password,
+        }
+    
+        users.push(newUser)
+        res.status(201).send ('Novo usuário cadastrado com sucesso')
+
+    } catch (error) {
+        if(error instanceof Error){
+            res.status(400).send (error.message)
+        }
     }
-
-    users.push(newUser)
-    res.status(201).send ('Novo usuário cadastrado com sucesso')
-
+    
 })
 
-app.delete('/users/:id',(req:Request, res:Response)=>{
-    const id = req.params.id
-    const indexToDelete = users.findIndex((user)=>user.id === id)
+app.delete('/users/:id',(req:Request, res:Response): void=>{
+        const id: string = req.params.id
+        const indexToDelete = users.findIndex((user)=>user.id === id)
 
-    if(indexToDelete >=0){
-        users.splice(indexToDelete,1)
-    }else{
-        console.log("Não há itens para deletar")
-    }
+        if(indexToDelete >=0){
+            users.splice(indexToDelete,1)
+        }else{
+            console.log("Não há itens para deletar")
+        }
 
-    res.status(200).send({message:"User apagado com sucesso"})
+        res.status(200).send({message:"User apagado com sucesso"})
 })
 
-app.get('/products', (req:Request, res:Response)=>{
-    const resultProducts: TProduct[] = products;
-    res.status(200).send(resultProducts);
+app.get('/products', (req:Request, res:Response): void=>{
+    try {
+        const query: string | undefined = req.query.q as string | undefined;
+
+        if(!query || query.length < 1 ){
+            res.statusCode = 400;
+            throw new Error ("O parâmetro 'name' deve possuir pelo menos um caractere. ")
+        }
+        const resultProducts: TProduct[] = products;
+                res.status(200).send(resultProducts);
+
+    } catch (error) {
+        if(error instanceof Error){
+        res.status(400).send (error.message)
+        }
+    }
+   
 });
 
 app.get('/products/search', (req:Request, res:Response)=>{
-    const query: string = req.query.q as string;
-    if (query) {
-        const productsByName: TProduct[] = products.filter(product => product.name.toLowerCase()===query.toLowerCase());
-        console.log('Produtos encontrados:', productsByName)
+        const query: string = req.query.q as string;
+        if (query) {
+            const productsByName: TProduct[] = products.filter(product => product.name.toLowerCase()===query.toLowerCase());
+            console.log('Produtos encontrados:', productsByName)
 
-           if (productsByName.length > 0){
-              res.status(200).send(productsByName);
-           }else{
-              res.status(404).send ('Nenhum produto encontrado com o nome informado');
-    }
-    }else{
-        res.status(200).send(products)
-    }
+            if (productsByName.length > 0){
+                res.status(200).send(productsByName);
+            }else{
+                res.status(404).send ('Nenhum produto encontrado com o nome informado');
+        }
+        }else{
+            res.status(200).send(products)
+        }
     
 } );
 
-app.post('/products', (req:Request, res:Response)=>{
-    const {id, name, price, description, imageUrl}: TProduct= req.body;
+app.post('/products', (req:Request, res:Response):void=>{
+    try {
+        const {id, name, price, description, imageUrl}: TProduct= req.body;
 
-    const newProduct: TProduct ={
-        id,
-        name,
-        price,
-        description, 
-        imageUrl
+        if (typeof id !== 'string' || !id.trim()){
+            res.statusCode = 400;
+            throw new Error ("O valor digitado para o 'id' deve ser uma string e não pode conter espaços vazios.")
+        }
+        if (typeof name !== 'string' ){
+            res.statusCode = 400;
+            throw new Error ("O valor digitado para 'name' dever ser uma string, não pode conter espaços vazios e deve possui mais de 2 caracteres.")
+        }
+        if (typeof price !== 'number' || price<= 0){
+            res.statusCode = 400;
+            throw new Error ("O valor digitado para o 'price' deve ser um número positivo.")
+        }
+        if (typeof description !== 'string'){
+            res.statusCode = 400;
+            throw new Error ("O valor digitado para 'description' deve ser uma string.")
+        }
+        if (typeof imageUrl !== 'string'){
+            res.statusCode = 400;
+            throw new Error ("O valor digitado para 'description' deve ser uma string.")
+        }
+        if(products.some(product=>product.id===id)){
+            res.statusCode = 400;
+            throw new Error ("Esse 'id' já está sendo utilizado.")
+        }
+
+        const newProduct: TProduct ={
+            id,
+            name,
+            price,
+            description, 
+            imageUrl
     }
 
-    products.push(newProduct)
-    res.status(201).send ('Novo produto cadastrado com sucesso')
+        products.push(newProduct)
+        res.status(201).send ('Novo produto cadastrado com sucesso')
 
+    } catch (error) {
+        if(error instanceof Error){
+        res.status(400).send (error.message)
+        }
+    }
+    
 })
 
 app.delete('/products/:id',(req:Request, res:Response)=>{
