@@ -12,8 +12,6 @@ import cors from 'cors'
 import { TProduct, TUser } from './types';
 
 
-
-
 console.log("Usuários:", users);
 console.log("Produtos:", products);
 
@@ -73,7 +71,7 @@ app.get('/users', (req: Request, res: Response) => {
     
 });
 
-app.post('/users', (req:Request, res:Response)=>{
+app.post('/users', (req:Request, res:Response):void=>{
     try {
         const {id, name, email, password}: TUser= req.body;
 
@@ -120,16 +118,25 @@ app.post('/users', (req:Request, res:Response)=>{
 })
 
 app.delete('/users/:id',(req:Request, res:Response): void=>{
+    try {
         const id: string = req.params.id
         const indexToDelete = users.findIndex((user)=>user.id === id)
 
         if(indexToDelete >=0){
             users.splice(indexToDelete,1)
+            res.status(200).send({message:"Usuário apagado com sucesso"})
         }else{
-            console.log("Não há itens para deletar")
+            res.statusCode=404;
+            throw new Error ("Usuário não encontrado. Verifique o 'id'.")
         }
 
-        res.status(200).send({message:"User apagado com sucesso"})
+        
+    } catch (error) {
+        if (error instanceof Error){
+            res.status(404).send({message:error.message})
+        }
+    }
+        
 })
 
 app.get('/products', (req:Request, res:Response): void=>{
@@ -216,36 +223,66 @@ app.post('/products', (req:Request, res:Response):void=>{
     
 })
 
-app.delete('/products/:id',(req:Request, res:Response)=>{
-    const id = req.params.id
-    const indexToDelete = products.findIndex((product)=>product.id === id)
+app.delete('/products/:id',(req:Request, res:Response):void=>{
+    try{
+        const id:string = req.params.id
+        const indexToDelete = products.findIndex((product)=>product.id === id)
 
-    if(indexToDelete >=0){
-        products.splice(indexToDelete,1)
-    }else{
-        console.log("Não há itens para deletar")
+        if(indexToDelete >=0){
+            products.splice(indexToDelete,1)
+            res.status(200).send({message:"Produto apagado com sucesso"})
+        }else{
+            res.statusCode=404;
+            throw new Error ("Produto não encontrado. Verifique o 'id'.")
+            
+        }
+
+    } catch(error){
+        if(error instanceof Error){
+            res.status(404).send({message:error.message})
+        }
+
     }
-
-    res.status(200).send({message:"Produto apagado com sucesso"})
+    
 })
 
-app.put ('/products/:id',(req:Request, res:Response)=>{
-    const id = req.params.id
-    const newName = req.body.name as string|undefined
-    const newPrice = req.body.price as number|undefined
-    const newDescription = req.body.description as string|undefined
-    const newImageUrl = req.body.imageUrl as string|undefined
+app.put ('/products/:id',(req:Request, res:Response):void=>{
 
-    const product = products.find((product)=>product.id === id)
-      
-    if (product) {
-        product.name = newName || product.name;
-        product.price = newPrice || product.price;
-        product.description = newDescription || product.description;
-        product.imageUrl = newImageUrl || product.imageUrl;
+    try{
+        const id:string = req.params.id;
+
+        const product = products.find((product)=>product.id === id)
+        if(!product){
+            res.statusCode=404;
+            throw new Error ("Produto não encontrado.")
+            return;
+        }
+        if(req.body.name !== undefined){
+            const newName= req.body.name as string
+            product.name = newName
+        }
+    
+        if(req.body.price !== undefined){
+            const newPrice= req.body.price as number
+            product.price = newPrice
+        }
+        if(req.body.description !== undefined){
+            const newDescription= req.body.description as string
+            product.description = newDescription
+        }
+        if(req.body.imageUrl !== undefined){
+            const newImageUrl= req.body.imageUrl as string
+            product.name = newImageUrl
+        }
+        
 
         res.status(200).send({ message: "Produto atualizado com sucesso" });
-    } else {
-        res.status(404).send({ message: "Produto não encontrado" });
+        
+            
+    
+    } catch(error){
+        if(error instanceof Error){
+            res.status(404).send({message:error.message})
+        }
     }
 });
