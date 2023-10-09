@@ -143,11 +143,16 @@ app.get('/products', (req:Request, res:Response): void=>{
     try {
         const query: string | undefined = req.query.q as string | undefined;
 
-        if(!query || query.length < 1 ){
+        let resultProducts: TProduct[] = products;
+
+        if(query && query.length >= 1 ){
+
+            resultProducts = products.filter((product)=>product.name.toLowerCase().includes(query.toLowerCase()))
             res.statusCode = 400;
-            throw new Error ("O parâmetro 'name' deve possuir pelo menos um caractere. ")
+            throw new Error ("O parâmetro 'name' deve ser uma string e possuir pelo menos um caractere. ")
+        
         }
-        const resultProducts: TProduct[] = products;
+        
                 res.status(200).send(resultProducts);
 
     } catch (error) {
@@ -257,14 +262,18 @@ app.put ('/products/:id',(req:Request, res:Response):void=>{
             throw new Error ("Produto não encontrado.")
             return;
         }
+        
         if(req.body.name !== undefined){
             const newName= req.body.name as string
             product.name = newName
+           
         }
     
-        if(req.body.price !== undefined){
+        if(req.body.price !== undefined && req.body.price <= 0){
             const newPrice= req.body.price as number
             product.price = newPrice
+            res.statusCode = 404;
+            throw new Error ("O preço do produto deve ser maior que zero.")
         }
         if(req.body.description !== undefined){
             const newDescription= req.body.description as string
