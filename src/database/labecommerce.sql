@@ -68,7 +68,7 @@ CREATE TABLE purchases(
 );
 
 INSERT INTO purchases (id, buyer, total_price, create_at)
-VALUES 
+VALUES -- o user u001 foi deletado
        ('pedido002', 'u002', 500, datetime('now')),
        ('pedido003', 'u003', 400, datetime('now')),
        ('pedido004', 'u004', 300, datetime('now')),
@@ -77,3 +77,22 @@ VALUES
        ('pedido007', 'u007', 350, datetime('now'));
 
 SELECT * FROM purchases;
+
+UPDATE purchases
+SET total_price = total_price + 50
+WHERE id = 'pedido002';
+
+UPDATE purchases
+SET total_price = total_price - 100
+WHERE id = 'pedido007';
+
+SELECT p.id AS purchase_id, 
+       u.id AS user_id, 
+       u.name AS user_name, 
+       u.email AS user_email, 
+       p.total_price, 
+       p.create_at 
+FROM purchases p 
+JOIN users u 
+ON p.buyer = u.id 
+WHERE p.id = 'pedido002';
