@@ -65,4 +65,15 @@ CREATE TABLE purchases(
     total_price REAL NOT NULL,
     create_at TEXT NOT NULL,
     FOREIGN KEY (buyer) REFERENCES users(id)
-)
+);
+
+INSERT INTO purchases (id, buyer, total_price, create_at)
+VALUES 
+       ('pedido002', 'u002', 500, datetime('now')),
+       ('pedido003', 'u003', 400, datetime('now')),
+       ('pedido004', 'u004', 300, datetime('now')),
+       ('pedido005', 'u005', 600, datetime('now')),
+       ('pedido006', 'u006', 450, datetime('now')),
+       ('pedido007', 'u007', 350, datetime('now'));
+
+SELECT * FROM purchases;
