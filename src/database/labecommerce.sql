@@ -120,14 +120,7 @@ VALUES
        ('pedido006', 'prod006', 2);
 --simula compra de clientes
 
-SELECT pp.purchase_id AS purchase_id, 
-       pp.product_id AS product_id,   
-       pp.quantity AS quantity,
-       pr.price AS product_price,
-       p.total_price AS total_price, 
-       p.create_at AS create_at 
-       
-FROM purchases_products pp
-JOIN purchases p ON pp.purchase_id = p.id
-JOIN products pr ON pp.product_id = pr.id;
 
+SELECT * FROM purchases_products
+INNER JOIN purchases ON purchases_products.purchase_id = purchases.id
+INNER JOIN products ON purchases_products.product_id = products.id;
