@@ -96,3 +96,38 @@ FROM purchases p
 JOIN users u 
 ON p.buyer = u.id 
 WHERE p.id = 'pedido002';
+
+CREATE TABLE purchases_products(
+    purchase_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+DROP TABLE IF EXISTS purchases_products;
+
+SELECT * FROM purchases_products;
+
+
+INSERT INTO purchases_products (purchase_id, product_id, quantity)
+--pedido 1 e produto 2 não existem mais na tabela, por isso estava dando erro
+VALUES 
+       ('pedido002', 'prod002', 3),
+       ('pedido003', 'prod003', 5),
+       ('pedido004', 'prod004', 1),
+       ('pedido005', 'prod005', 4),
+       ('pedido006', 'prod006', 2);
+--simula compra de clientes
+
+SELECT pp.purchase_id AS purchase_id, 
+       pp.product_id AS product_id,   
+       pp.quantity AS quantity,
+       pr.price AS product_price,
+       p.total_price AS total_price, 
+       p.create_at AS create_at 
+       
+FROM purchases_products pp
+JOIN purchases p ON pp.purchase_id = p.id
+JOIN products pr ON pp.product_id = pr.id;
+
