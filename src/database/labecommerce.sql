@@ -63,16 +63,15 @@ CREATE TABLE purchases(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     buyer TEXT NOT NULL,
     total_price REAL NOT NULL,
-    create_at TEXT NOT NULL,
+    created_at TEXT NOT NULL,
     FOREIGN KEY (buyer) REFERENCES users(id) 
     ON DELETE CASCADE 
     ON UPDATE CASCADE
 );
 
-
 -- DROP TABLE IF EXISTS purchases;precisei deletar primeiro a tabela purchases_products
 
-INSERT INTO purchases (id, buyer, total_price, create_at)
+INSERT INTO purchases (id, buyer, total_price, created_at)
 VALUES -- o user u001 foi deletado
        ('pedido002', 'u002', 500, datetime('now')),
        ('pedido003', 'u003', 400, datetime('now')),
@@ -96,7 +95,7 @@ SELECT p.id AS purchase_id,
        u.name AS user_name, 
        u.email AS user_email, 
        p.total_price, 
-       p.create_at 
+       p.created_at 
 FROM purchases p 
 JOIN users u 
 ON p.buyer = u.id 
@@ -114,7 +113,7 @@ CREATE TABLE IF NOT EXISTS purchases_products(
     ON UPDATE CASCADE
 );
 
--- DROP TABLE IF EXISTS purchases_products;
+DROP TABLE IF EXISTS purchases_products;
 
 SELECT * FROM purchases_products;
 
