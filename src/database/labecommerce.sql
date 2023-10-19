@@ -64,8 +64,13 @@ CREATE TABLE purchases(
     buyer TEXT NOT NULL,
     total_price REAL NOT NULL,
     create_at TEXT NOT NULL,
-    FOREIGN KEY (buyer) REFERENCES users(id)
+    FOREIGN KEY (buyer) REFERENCES users(id) 
+    ON DELETE CASCADE 
+    ON UPDATE CASCADE
 );
+
+
+-- DROP TABLE IF EXISTS purchases;precisei deletar primeiro a tabela purchases_products
 
 INSERT INTO purchases (id, buyer, total_price, create_at)
 VALUES -- o user u001 foi deletado
@@ -97,15 +102,19 @@ JOIN users u
 ON p.buyer = u.id 
 WHERE p.id = 'pedido002';
 
-CREATE TABLE purchases_products(
+CREATE TABLE IF NOT EXISTS purchases_products(
     purchase_id TEXT NOT NULL,
     product_id TEXT NOT NULL,
     quantity INTEGER NOT NULL,
-    FOREIGN KEY (purchase_id) REFERENCES purchases(id),
-    FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id) 
+    ON DELETE CASCADE 
+    ON UPDATE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) 
+    ON DELETE CASCADE 
+    ON UPDATE CASCADE
 );
 
-DROP TABLE IF EXISTS purchases_products;
+-- DROP TABLE IF EXISTS purchases_products;
 
 SELECT * FROM purchases_products;
 
@@ -124,3 +133,5 @@ VALUES
 SELECT * FROM purchases_products
 INNER JOIN purchases ON purchases_products.purchase_id = purchases.id
 INNER JOIN products ON purchases_products.product_id = products.id;
+
+
