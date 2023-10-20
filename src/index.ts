@@ -10,42 +10,42 @@ import {
 import express, {Request, Response} from 'express';
 import cors from 'cors'
 import { TProduct, TUser } from './types';
+import { db } from './database/knex'
 
+// console.log("Usuários:", users);
+// console.log("Produtos:", products);
 
-console.log("Usuários:", users);
-console.log("Produtos:", products);
+// //criando novo usário
+// const resultRegistration = createUser (
+//     "u003", 
+//     "Astrodev", 
+//     "astrodev@email.com", 
+//     "astrodev99"
+// );
+// console.log (resultRegistration)
 
-//criando novo usário
-const resultRegistration = createUser (
-    "u003", 
-    "Astrodev", 
-    "astrodev@email.com", 
-    "astrodev99"
-);
-console.log (resultRegistration)
+// //buscando todos os usuários
+// const listUsers = getAllUsers();
+// console.log ("Lista de Usuários:", listUsers)
 
-//buscando todos os usuários
-const listUsers = getAllUsers();
-console.log ("Lista de Usuários:", listUsers)
+// //criando novo produto
+// const resultCreateProduct = createProduct(
+//     "prod003",
+//     "SSD gamer",
+//     349.99,
+//     "Acelere seu sistema com velocidades incríveis de leitura e gravação.",
+//     "https://images.unsplash.com/photo"
+// );
+// console.log(resultCreateProduct);
 
-//criando novo produto
-const resultCreateProduct = createProduct(
-    "prod003",
-    "SSD gamer",
-    349.99,
-    "Acelere seu sistema com velocidades incríveis de leitura e gravação.",
-    "https://images.unsplash.com/photo"
-);
-console.log(resultCreateProduct);
+// //buscando todos os produtos
+// const listProducts = getAllProducts();
+// console.log ("Lista de produtos:", listProducts)
 
-//buscando todos os produtos
-const listProducts = getAllProducts();
-console.log ("Lista de produtos:", listProducts)
-
-//buscando produto por nome
-const searchName = "gamer";
-const productsFound = searchProductsByName(searchName);
-console.log(`Produtos encontrados com o termo "${searchName}":`,productsFound)
+// //buscando produto por nome
+// const searchName = "gamer";
+// const productsFound = searchProductsByName(searchName);
+// console.log(`Produtos encontrados com o termo "${searchName}":`,productsFound)
 
 
 const app = express()
@@ -61,14 +61,13 @@ app.get('/ping', (req: Request, res: Response) => {
     res.send('Pong!')
 })
 
-app.get('/users', (req: Request, res: Response) => {
+app.get('/users', async (req: Request, res: Response) => {
     try {
-        const users: TUser[] = getAllUsers();
-        res.status(200).send(users);
+        const result: TUser[] =await db.raw('SELECT * FROM users');
+        res.status(200).send(result);
     } catch (error) {
-        res.status(500).send({message:'Ocorreu um erro ao buscar os usuários'})
+        res.status(500).send({ message: 'Ocorreu um erro ao buscar os usuários' });
     }
-    
 });
 
 app.post('/users', (req:Request, res:Response):void=>{
@@ -117,6 +116,7 @@ app.post('/users', (req:Request, res:Response):void=>{
     
 })
 
+
 app.delete('/users/:id',(req:Request, res:Response): void=>{
     try {
         const id: string = req.params.id
@@ -139,21 +139,21 @@ app.delete('/users/:id',(req:Request, res:Response): void=>{
         
 })
 
-app.get('/products', (req:Request, res:Response): void=>{
+
+
+app.get('/products', async (req:Request, res:Response)=>{
     try {
         const query: string | undefined = req.query.q as string | undefined;
 
-        let resultProducts: TProduct[] = products;
+        let resultProducts: TProduct[] = await db.raw('SELECT*FROM products');
 
         if(query && query.length >= 1 ){
 
             resultProducts = products.filter((product)=>product.name.toLowerCase().includes(query.toLowerCase()))
             res.statusCode = 400;
             throw new Error ("O parâmetro 'name' deve ser uma string e possuir pelo menos um caractere. ")
-        
         }
-        
-                res.status(200).send(resultProducts);
+            res.status(200).send(resultProducts);
 
     } catch (error) {
         if(error instanceof Error){
@@ -162,23 +162,36 @@ app.get('/products', (req:Request, res:Response): void=>{
     }
    
 });
+ 
+app.get('/products/search', async (req, res) => {
+    try {
+        const query = req.query.q as string;
 
-app.get('/products/search', (req:Request, res:Response)=>{
-        const query: string = req.query.q as string;
         if (query) {
-            const productsByName: TProduct[] = products.filter(product => product.name.toLowerCase()===query.toLowerCase());
-            console.log('Produtos encontrados:', productsByName)
+            const searchName = `%${query}%`;
+            const productsByName = await db.raw('SELECT * FROM products WHERE LOWER(name) LIKE LOWER(?)', [searchName]);
 
-            if (productsByName.length > 0){
-                res.status(200).send(productsByName);
-            }else{
-                res.status(404).send ('Nenhum produto encontrado com o nome informado');
+            if (productsByName && productsByName[0]) {
+                res.status(200).send(productsByName[0]);
+            } else {
+                res.status(404).send('Nenhum produto encontrado com o nome informado');
+            }
+        } else {
+            const allProducts = await db.raw('SELECT * FROM products');
+
+            if (allProducts && allProducts[0]) {
+                res.status(200).send(allProducts[0]);
+            } else {
+                res.status(404).send('Nenhum produto encontrado.');
+            }
         }
-        }else{
-            res.status(200).send(products)
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(400).send(error.message);
         }
-    
-} );
+    }
+});
+//filtra produtos por nome
 
 app.post('/products', (req:Request, res:Response):void=>{
     try {

@@ -63,7 +63,7 @@ CREATE TABLE purchases(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     buyer TEXT NOT NULL,
     total_price REAL NOT NULL,
-    created_at TEXT NOT NULL,
+    created_at TEXT DEFAULT (DATETIME('now','localtime')),
     FOREIGN KEY (buyer) REFERENCES users(id) 
     ON DELETE CASCADE 
     ON UPDATE CASCADE
@@ -99,9 +99,9 @@ SELECT p.id AS purchase_id,
 FROM purchases p 
 JOIN users u 
 ON p.buyer = u.id 
-WHERE p.id = 'pedido002';
+WHERE p.id = 'pedido005';
 
-CREATE TABLE IF NOT EXISTS purchases_products(
+CREATE TABLE purchases_products(
     purchase_id TEXT NOT NULL,
     product_id TEXT NOT NULL,
     quantity INTEGER NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS purchases_products(
     ON UPDATE CASCADE
 );
 
-DROP TABLE IF EXISTS purchases_products;
+-- DROP TABLE IF EXISTS purchases_products;
 
 SELECT * FROM purchases_products;
 
