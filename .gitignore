@@ -8,3 +8,6 @@
 
 #dataBase
 .db
+
+#request
+request.rest
