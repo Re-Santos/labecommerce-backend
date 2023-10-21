@@ -6,22 +6,24 @@ CREATE TABLE users(
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     password TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT DEFAULT (DATETIME('now','localtime'))
 );
+
+-- DROP TABLE IF EXISTS users;
 
 SELECT * FROM users;
 
-INSERT INTO users (id, name, email, password, created_at) 
-VALUES ('u001', 'Fulano', 'fulano@email.com', 'fulano123',datetime('now')),
-       ('u002', 'Beltrana', 'beltrana@email.com','beltrana00',datetime('now')),
-       ('u003', 'Astrodev', 'astrodev@email.com', 'astrodev99',datetime('now'));
+INSERT INTO users (id, name, email, password) 
+VALUES ('u001', 'Fulano', 'fulano@email.com'),
+       ('u002', 'Beltrana', 'beltrana@email.com'),
+       ('u003', 'Astrodev', 'astrodev@email.com', 'astrodev99');
 
 INSERT INTO users 
-VALUES ('u004', 'Amanda', 'amanda@email.com', 'amanda123', datetime('now')),
-       ('u005', 'Jéssica', 'jessica@email.com', 'jessica123',datetime('now')),
-       ('u006', 'Beatriz', 'beatriz@email', 'beatriz123', datetime('now'));
+VALUES ('u004', 'Amanda', 'amanda@email.com', 'amanda123'),
+       ('u005', 'Jéssica', 'jessica@email.com', 'jessica123'),
+       ('u006', 'Beatriz', 'beatriz@email', 'beatriz123');
 INSERT INTO users
-VALUES ('u007', 'Cristiane','cris@email.com','cris159', datetime('now'));
+VALUES ('u007', 'Cristiane','cris@email.com','cris159');
        
 DELETE FROM users 
 WHERE id = 'u001';
@@ -112,9 +114,6 @@ CREATE TABLE purchases_products(
     ON DELETE CASCADE 
     ON UPDATE CASCADE
 );
-
--- DROP TABLE IF EXISTS purchases_products;
-
 SELECT * FROM purchases_products;
 
 
