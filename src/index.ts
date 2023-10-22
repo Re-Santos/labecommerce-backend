@@ -28,9 +28,11 @@ app.get('/ping', (req: Request, res: Response) => {
 
 app.get('/users', async (req: Request, res: Response) => {
     try {
-        const result: TUser[] =await db.raw('SELECT * FROM users');
+        const result: TUser[] = await db('users').select('*');
+        
         res.status(200).send(result);
     } catch (error) {
+        
         res.status(500).send({ message: 'Ocorreu um erro ao buscar os usuários' });
     }
 });
@@ -244,11 +246,11 @@ app.put('/products/:id', async (req: Request, res: Response): Promise<void> => {
     }
 });
 
-app.post('/purchases', async (req:Request, res:Response):Promise<void> => {
+app.post('/purchases', async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id, buyer, products }= req.body;
-        //verifica se ja existe um pedido com o mesmo ID
-        const existingPurchase = await db.raw('SELECT * FROM purchases WHERE id = ?', [id]);
+        const { id, buyer, products } = req.body;
+        // verifica se já existe um pedido com o mesmo ID
+        const existingPurchase = await db.select('*').from('purchases').where('id', id);
         if (existingPurchase.length > 0) {
             res.status(400).send("O pedido com o ID informado já existe.");
             return;
@@ -256,11 +258,11 @@ app.post('/purchases', async (req:Request, res:Response):Promise<void> => {
 
         let total_price = 0;
 
-        await db.raw('INSERT INTO purchases (id, buyer, total_price) VALUES (?, ?, ?)', [id, buyer, total_price]);
-        //verifica se já existe um pedido com o mesmo id, caso não, insere o pedido na tabela
+        await db('purchases').insert({ id: id, buyer: buyer, total_price: total_price });
+        // verifica se já existe um pedido com o mesmo id, caso não, insere o pedido na tabela
         for (const product of products) {
             const { id: productId, quantity } = product;
-            await db.raw('INSERT INTO purchases_products (purchase_id, product_id, quantity) VALUES (?, ?, ?)', [id, productId, quantity]);
+            await db('purchases_products').insert({ purchase_id: id, product_id: productId, quantity: quantity });
         }
 
         res.status(201).send({ message: "Pedido realizado com sucesso" });
@@ -271,17 +273,17 @@ app.post('/purchases', async (req:Request, res:Response):Promise<void> => {
     }
 });
 
-app.delete('/purchases/:id', async (req:Request, res:Response):Promise<void> => {
+app.delete('/purchases/:id', async (req: Request, res: Response): Promise<void> => {
     try {
-        const id:string = req.params.id;
+        const id: string = req.params.id;
 
-        const existingPurchase = await db.raw('SELECT * FROM purchases WHERE id = ?', [id]);
+        const existingPurchase = await db.select('*').from('purchases').where('id', id);
         if (existingPurchase.length === 0) {
             res.status(404).send("Pedido não encontrado.");
             return;
         }
 
-        await db.raw('DELETE FROM purchases WHERE id = ?', [id]);
+        await db('purchases').where('id', id).del();
 
         res.status(200).send({ message: "Pedido cancelado com sucesso" });
     } catch (error) {
@@ -290,3 +292,4 @@ app.delete('/purchases/:id', async (req:Request, res:Response):Promise<void> => 
         }
     }
 });
+
