@@ -293,3 +293,25 @@ app.delete('/purchases/:id', async (req: Request, res: Response): Promise<void> 
     }
 });
 
+app.get('/purchases/:id', async (req: Request, res: Response) => {
+    try {
+        const id: string = req.params.id;
+
+        const purchase = await db.select('p.id as purchaseId', 'u.id as buyerId', 'u.name as buyerName', 'u.email as buyerEmail', 'p.total_price as totalPrice', 'p.created_at as createdAt')
+            .from('purchases as p')
+            .where('p.id', id)
+            .join('users as u', 'p.buyer', 'u.id')
+            .first();
+
+        if (!purchase) {
+            res.status(404).send("Pedido não encontrado.");
+            return;
+        }
+
+        res.status(200).send(purchase);
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).send({ message: 'Ocorreu um erro ao buscar o pedido.' });
+        }
+    }
+});
