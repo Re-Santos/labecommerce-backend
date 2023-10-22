@@ -70,7 +70,6 @@ app.post('/users', async (req:Request, res:Response): Promise<void> => {
     }
 });
 
-
 app.delete('/users/:id',(req:Request, res:Response): void=>{
     try {
         const id: string = req.params.id
@@ -196,8 +195,7 @@ app.delete('/products/:id',(req:Request, res:Response):void=>{
             res.status(200).send({message:"Produto apagado com sucesso"})
         }else{
             res.statusCode=404;
-            throw new Error ("Produto não encontrado. Verifique o 'id'.")
-            
+            throw new Error ("Produto não encontrado. Verifique o 'id'.") 
         }
 
     } catch(error){
@@ -208,44 +206,40 @@ app.delete('/products/:id',(req:Request, res:Response):void=>{
     
 });
 
-app.put ('/products/:id',(req:Request, res:Response):void=>{
+app.put('/products/:id', async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id: string = req.params.id;
+        const { name, price, description, imageUrl } = req.body;
 
-    try{
-        const id:string = req.params.id;
+        const product = await db.raw('SELECT * FROM products WHERE id = ?', [id]);
 
-        const product = products.find((product)=>product.id === id)
-        if(!product){
-            res.statusCode=404;
-            throw new Error ("Produto não encontrado.")
+        if (!product || product.length === 0) {
+            res.status(404).send({ message: "Produto não encontrado." });
             return;
         }
-        
-        if(req.body.name !== undefined){
-            const newName= req.body.name as string
-            product.name = newName
-           
-        }
-    
-        if(req.body.price !== undefined && req.body.price <= 0){
-            const newPrice= req.body.price as number
-            product.price = newPrice
-            res.statusCode = 404;
-            throw new Error ("O preço do produto deve ser maior que zero.")
-        }
-        if(req.body.description !== undefined){
-            const newDescription= req.body.description as string
-            product.description = newDescription
-        }
-        if(req.body.imageUrl !== undefined){
-            const newImageUrl= req.body.imageUrl as string
-            product.name = newImageUrl
-        }
-        
+
+        const updateParams = {
+            name: name || product[0].name,
+            price: price || product[0].price,
+            description: description || product[0].description,
+            image_url: imageUrl || product[0].image_url
+        };
+
+        await db.raw(
+            `UPDATE products 
+            SET name = ?, 
+                price = ?, 
+                description = ?, 
+                image_url = ? 
+                WHERE id = ?`,
+            [updateParams.name, updateParams.price, updateParams.description, updateParams.image_url, id]
+        );
+
         res.status(200).send({ message: "Produto atualizado com sucesso" });
-        
-    } catch(error){
-        if(error instanceof Error){
-            res.status(404).send({message:error.message})
+
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(500).send({ message: 'Houve um erro ao atualizar o produto' });
         }
     }
 });
@@ -273,6 +267,26 @@ app.post('/purchases', async (req:Request, res:Response):Promise<void> => {
     } catch (error) {
         if (error instanceof Error) {
             res.status(400).send(error.message);
+        }
+    }
+});
+
+app.delete('/purchases/:id', async (req:Request, res:Response):Promise<void> => {
+    try {
+        const id:string = req.params.id;
+
+        const existingPurchase = await db.raw('SELECT * FROM purchases WHERE id = ?', [id]);
+        if (existingPurchase.length === 0) {
+            res.status(404).send("Pedido não encontrado.");
+            return;
+        }
+
+        await db.raw('DELETE FROM purchases WHERE id = ?', [id]);
+
+        res.status(200).send({ message: "Pedido cancelado com sucesso" });
+    } catch (error) {
+        if (error instanceof Error) {
+            res.status(400).send({ message: error.message });
         }
     }
 });
