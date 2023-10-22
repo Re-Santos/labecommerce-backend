@@ -296,19 +296,32 @@ app.delete('/purchases/:id', async (req: Request, res: Response): Promise<void> 
 app.get('/purchases/:id', async (req: Request, res: Response) => {
     try {
         const id: string = req.params.id;
-
-        const purchase = await db.select('p.id as purchaseId', 'u.id as buyerId', 'u.name as buyerName', 'u.email as buyerEmail', 'p.total_price as totalPrice', 'p.created_at as createdAt')
+        //busca o pedido pelo id
+        const purchase = await db
+            .select('p.id as purchaseId', 'u.id as buyerId', 'u.name as buyerName', 'u.email as buyerEmail', 'p.total_price as totalPrice', 'p.created_at as createdAt')
             .from('purchases as p')
             .where('p.id', id)
             .join('users as u', 'p.buyer', 'u.id')
             .first();
 
         if (!purchase) {
-            res.status(404).send("Pedido não encontrado.");
+            res.status(404).send("pedido não encontrado.");
             return;
         }
+        // busca os produtos que estão no pedido
+        const products = await db
+            .select('pr.id', 'pr.name', 'pr.price', 'pr.description', 'pr.image_url', 'pp.quantity')
+            .from('purchases_products as pp')
+            .where('pp.purchase_id', id)
+            .join('products as pr', 'pp.product_id', 'pr.id');
+            
+        //saída das infromações com o pedido e os produtos
+        const purchaseWithProducts = {
+            ...purchase,
+            products: products
+        };
 
-        res.status(200).send(purchase);
+        res.status(200).send(purchaseWithProducts);
     } catch (error) {
         if (error instanceof Error) {
             res.status(500).send({ message: 'Ocorreu um erro ao buscar o pedido.' });
