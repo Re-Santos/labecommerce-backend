@@ -21,6 +21,11 @@ Bem-vindo à documentação da Labecommerce API, uma API de exemplo para um sist
 - `PUT /products/:id`: Edita um produto existente com base no ID.
 - `DELETE /products/:id`: Deleta um produto existente com base no ID.
 
+### Compras (Purchases)
+- `GET /purchases`: Retorna todos os pedidos de compra.
+- `GET /purchases/:id`: Retorna informações detalhadas sobre um pedido específico com base no ID.
+- `POST /purchases`: Cria um novo pedido de compra.
+- `DELETE /purchases/:id`: Deleta um pedido de compra existente com base no ID.
 
 ## Como Usar
 
